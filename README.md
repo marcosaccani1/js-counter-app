@@ -2,6 +2,8 @@
 
 Semplice applicazione web che simula il comportamento di un counter (contatore), realizzata interamente in **JavaScript puro**.
 
+<img width="866" height="834" alt="image" src="https://github.com/user-attachments/assets/1de61ae0-7976-49de-a037-3a21d7bfa745" />
+
 ## Descrizione del progetto
 
 L'applicazione permette all'utente di:
