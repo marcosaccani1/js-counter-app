@@ -30,6 +30,9 @@ L'interfaccia è stata creata **dinamicamente tramite JavaScript**, utilizzando 
   - rosso se negativo
   - colore neutro se uguale a zero
 
+## Live demo
+https://69c1965b988c961bf57cea84--luminous-griffin-8f6308.netlify.app
+
 ## Struttura del progetto
 ```text
 counter-app/
