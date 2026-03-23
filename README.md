@@ -31,6 +31,7 @@ L'interfaccia è stata creata **dinamicamente tramite JavaScript**, utilizzando 
   - colore neutro se uguale a zero
 
 ## Struttura del progetto
+```text
 counter-app/
 │
 ├── index.html
