@@ -1,107 +1,154 @@
-// Counter App - JavaScript puro
-// Interfaccia creata dinamicamente via DOM
+"use strict";
 
-// Stato iniziale del counter recuperato da localStorage, se presente
-let counterValue = Number(localStorage.getItem("counterValue")) || 0;
+/* Counter App
+   - Interfaccia generata dinamicamente via DOM
+   - Responsabilità separate
+   - Persistenza tramite localStorage */
 
-// Elementi globali
-let counterDisplay;
+const STORAGE_KEY = "counterValue";
 
-// Funzione per salvare il valore nel browser
-function saveCounterValue() {
-  localStorage.setItem("counterValue", counterValue);
+/**
+ * Recupera il valore iniziale del counter dal localStorage.
+ * Se il valore non esiste o non è valido, restituisce 0.
+ * @returns {number}
+ */
+function getInitialCounterValue() {
+  const savedValue = Number(localStorage.getItem(STORAGE_KEY));
+  return Number.isNaN(savedValue) ? 0 : savedValue;
 }
 
-// Funzione per aggiornare la visualizzazione del counter
-function updateDisplay() {
-  counterDisplay.textContent = counterValue;
+/**
+ * Salva il valore corrente del counter nel localStorage.
+ * @param {number} value
+ */
+function saveCounterValue(value) {
+  localStorage.setItem(STORAGE_KEY, String(value));
+}
 
-  counterDisplay.classList.remove("positive", "negative", "animate");
+/**
+ * Aggiorna il contenuto e lo stile del display.
+ * Questa funzione si occupa solo del rendering.
+ * @param {HTMLElement} displayElement
+ * @param {number} value
+ */
+function renderCounterValue(displayElement, value) {
+  displayElement.textContent = value;
 
-  if (counterValue > 0) {
-    counterDisplay.classList.add("positive");
-  } else if (counterValue < 0) {
-    counterDisplay.classList.add("negative");
+  displayElement.classList.remove("positive", "negative", "animate");
+
+  if (value > 0) {
+    displayElement.classList.add("positive");
+  } else if (value < 0) {
+    displayElement.classList.add("negative");
   }
 
-  // Piccola animazione a ogni aggiornamento
-  counterDisplay.classList.add("animate");
+  displayElement.classList.add("animate");
+
   setTimeout(() => {
-    counterDisplay.classList.remove("animate");
+    displayElement.classList.remove("animate");
   }, 200);
-
-  saveCounterValue();
 }
 
-// Funzione per incrementare
-function incrementCounter() {
-  counterValue++;
-  updateDisplay();
+/**
+ * Crea un elemento HTML con eventuale classe e contenuto testuale.
+ * @param {string} tagName
+ * @param {string} className
+ * @param {string} textContent
+ * @returns {HTMLElement}
+ */
+function createElement(tagName, className = "", textContent = "") {
+  const element = document.createElement(tagName);
+
+  if (className) {
+    element.className = className;
+  }
+
+  if (textContent) {
+    element.textContent = textContent;
+  }
+
+  return element;
 }
 
-// Funzione per decrementare
-function decrementCounter() {
-  counterValue--;
-  updateDisplay();
-}
-
-// Funzione per resettare
-function resetCounter() {
-  counterValue = 0;
-  updateDisplay();
-}
-
-// Funzione per creare un bottone
-function createButton(text, className, onClickHandler) {
+/**
+ * Crea un bottone configurato con testo, classe ed event handler.
+ * @param {string} label
+ * @param {string} className
+ * @param {Function} eventHandler
+ * @returns {HTMLButtonElement}
+ */
+function createButton(label, className, eventHandler) {
   const button = document.createElement("button");
-  button.textContent = text;
+  button.type = "button";
   button.className = className;
-  button.addEventListener("click", onClickHandler);
+  button.textContent = label;
+  button.addEventListener("click", eventHandler);
+
   return button;
 }
 
-// Funzione per costruire l'interfaccia
+/**
+ * Costruisce dinamicamente tutta l'applicazione.
+ */
 function createCounterApp() {
-  const app = document.createElement("main");
-  app.className = "counter-app";
+  let counterValue = getInitialCounterValue();
 
-  const title = document.createElement("h1");
-  title.className = "counter-title";
-  title.textContent = "Counter App";
+  const appContainer = createElement("main", "counter-app");
 
-  const subtitle = document.createElement("p");
-  subtitle.className = "counter-subtitle";
-  subtitle.textContent = "Contatore realizzato con JavaScript puro e DOM manipulation";
+  const titleElement = createElement("h1", "counter-title", "Counter App");
+  const subtitleElement = createElement(
+    "p",
+    "counter-subtitle",
+    "Applicazione realizzata in JavaScript puro con interfaccia generata dinamicamente tramite DOM manipulation."
+  );
 
-  counterDisplay = document.createElement("div");
-  counterDisplay.className = "counter-value";
-  counterDisplay.setAttribute("aria-live", "polite");
+  const counterDisplayElement = createElement("div", "counter-value");
+  counterDisplayElement.setAttribute("aria-live", "polite");
+  counterDisplayElement.setAttribute("aria-label", "Valore corrente del counter");
 
-  const buttonsContainer = document.createElement("div");
-  buttonsContainer.className = "counter-buttons";
+  const buttonsContainer = createElement("div", "counter-buttons");
 
-  const decrementButton = createButton("−", "btn-decrement", decrementCounter);
-  const incrementButton = createButton("+", "btn-increment", incrementCounter);
-  const resetButton = createButton("Reset", "btn-reset", resetCounter);
+  /**
+   * Sincronizza stato, interfaccia e persistenza.
+   * @param {number} newValue
+   */
+  function syncCounter(newValue) {
+    counterValue = newValue;
+    renderCounterValue(counterDisplayElement, counterValue);
+    saveCounterValue(counterValue);
+  }
 
-  const note = document.createElement("p");
-  note.className = "counter-note";
-  note.textContent = "Il valore viene salvato automaticamente nel browser.";
+  const decrementButton = createButton("−", "btn-decrement", () => {
+    syncCounter(counterValue - 1);
+  });
+
+  const incrementButton = createButton("+", "btn-increment", () => {
+    syncCounter(counterValue + 1);
+  });
+
+  const resetButton = createButton("Reset", "btn-reset", () => {
+    syncCounter(0);
+  });
+
+  const noteElement = createElement(
+    "p",
+    "counter-note",
+    "Funzionalità extra: il valore viene salvato automaticamente nel browser tramite localStorage."
+  );
 
   buttonsContainer.appendChild(decrementButton);
   buttonsContainer.appendChild(incrementButton);
 
-  app.appendChild(title);
-  app.appendChild(subtitle);
-  app.appendChild(counterDisplay);
-  app.appendChild(buttonsContainer);
-  app.appendChild(resetButton);
-  app.appendChild(note);
+  appContainer.appendChild(titleElement);
+  appContainer.appendChild(subtitleElement);
+  appContainer.appendChild(counterDisplayElement);
+  appContainer.appendChild(buttonsContainer);
+  appContainer.appendChild(resetButton);
+  appContainer.appendChild(noteElement);
 
-  document.body.appendChild(app);
+  document.body.appendChild(appContainer);
 
-  updateDisplay();
+  renderCounterValue(counterDisplayElement, counterValue);
 }
 
-// Avvio applicazione
-document.addEventListener("DOMContentLoaded", createCounterApp);
+createCounterApp();
